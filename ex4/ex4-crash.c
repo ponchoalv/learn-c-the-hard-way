@@ -1,8 +1,8 @@
 #include <stdio.h>
 
-
-void crash() {
-    char* pepe = NULL;
+void crash()
+{
+    char *pepe = NULL;
 
     printf("hey %c", pepe[0]);
 }
