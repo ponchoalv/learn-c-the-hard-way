@@ -28,6 +28,7 @@ void Person_destroy(struct Person *who)
 {
     free(who->name);
     free(who);
+    who = NULL;
 }
 
 void Person_print(struct Person *who)
