@@ -86,13 +86,13 @@ void Database_load(struct Connection *conn)
     if (rc != 1)
         die(conn, "Failed to load database max_rows.");
 
-    conn->db->rows = (struct Address **)malloc(sizeof(struct Address *) * conn->db->max_rows);
+    conn->db->rows = malloc(sizeof(struct Address *) * conn->db->max_rows);
     if (conn->db->rows == NULL)
         die(conn, "Cannot address memory for DB rows.");
 
     for (int i = 0; i < conn->db->max_rows; i++)
     {
-        conn->db->rows[i] = (struct Address *)malloc(sizeof(struct Address));
+        conn->db->rows[i] = malloc(sizeof(struct Address));
         struct Address *row = conn->db->rows[i];
         if (fread(&row->id, sizeof(int), 1, conn->file) != 1)
             die(conn, "Database load : Could not read Address::id");
@@ -196,17 +196,15 @@ void Database_create(struct Connection *conn, int max_data, int max_rows)
 {
     conn->db->max_data = max_data;
     conn->db->max_rows = max_rows;
-    conn->db->rows = (struct Address **)malloc(sizeof(struct Address *) * conn->db->max_rows);
+    conn->db->rows = malloc(sizeof(struct Address *) * conn->db->max_rows);
 
     for (int i = 0; i < conn->db->max_rows; i++)
     {
-        conn->db->rows[i] = (struct Address *)malloc(sizeof(struct Address));
+        conn->db->rows[i] = malloc(sizeof(struct Address));
         conn->db->rows[i]->id = i;
         conn->db->rows[i]->set = 0;
-        conn->db->rows[i]->name = (char *)malloc(sizeof(char) * conn->db->max_data);
-        // conn->db->rows[i]->name = (char *)memset(conn->db->rows[i]->name, ' ', conn->db->max_data);
-        conn->db->rows[i]->email = (char *)malloc(sizeof(char) * conn->db->max_data);
-        // conn->db->rows[i]->email = (char *)memset(conn->db->rows[i]->email, ' ', conn->db->max_data);
+        conn->db->rows[i]->name = malloc(sizeof(char) * conn->db->max_data);
+        conn->db->rows[i]->email = malloc(sizeof(char) * conn->db->max_data);
     }
 }
 
@@ -263,12 +261,23 @@ void Database_list(struct Connection *conn)
     }
 }
 
-int id_get(struct Connection *conn, const char *argv[])
+int Id_get(struct Connection *conn, const char *argv[])
 {
     int id = atoi(argv[3]);
     if (id >= conn->db->max_rows)
         die(conn, "There's not that many records.");
     return id;
+}
+
+void Database_find(struct Connection *conn, const char *word)
+{
+     struct Database *db = conn->db;
+    for (int i = 0; i < conn->db->max_rows; i++)
+    {
+        struct Address *cur = db->rows[i];
+        if (cur->set && (strstr(cur->name, word) || strstr(cur->email, word)))
+            Address_print(cur);
+    }
 }
 
 int main(int argc, const char *argv[])
@@ -293,13 +302,13 @@ int main(int argc, const char *argv[])
         if (argc != 4)
             die(conn, "Need an id to get.");
 
-        Database_get(conn, id_get(conn, argv));
+        Database_get(conn, Id_get(conn, argv));
         break;
     case 's':
         if (argc != 6)
             die(conn, "Need id, name, email to set.");
 
-        Database_set(conn, id_get(conn, argv), argv[4], argv[5]);
+        Database_set(conn, Id_get(conn, argv), argv[4], argv[5]);
         Database_write(conn);
         break;
     case 'd':
@@ -308,11 +317,18 @@ int main(int argc, const char *argv[])
             die(conn, "Need id to delete.");
         }
 
-        Database_delete(conn, id_get(conn, argv));
+        Database_delete(conn, Id_get(conn, argv));
         Database_write(conn);
         break;
     case 'l':
         Database_list(conn);
+        break;
+    case 'f':
+     if (argc != 4)
+        {
+            die(conn, "Need id to delete.");
+        }
+        Database_find(conn, argv[3]);
         break;
 
     default:
