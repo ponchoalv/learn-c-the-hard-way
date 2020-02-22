@@ -101,26 +101,33 @@ int main(int argc, char *argv[])
     memset(to, 'y', 1000);
     check(valid_copy(to, 1000, 'y'), "Not initialized right.");
 
+    log_info("started normal copy");
     // use normal copy to
     rc = normal_copy(from, to, 1000);
     check(rc == 1000, "Normal copy failed: %d", rc);
     check(valid_copy(to, 1000, 'x'), "Normal copy failed.");
-
+    log_info("finished normal copy");
     // reset
     memset(to, 'y', 1000);
 
+
+    log_info("started duffs copy");
     // duffs version
     rc = duffs_device(from, to, 1000);
     check(rc == 1000, "Normal copy failed: %d", rc);
     check(valid_copy(to, 1000, 'x'), "Duff's device failed copy.");
+    log_info("finished duffs copy");
 
     // reset
     memset(to, 'y', 1000);
 
+
+    log_info("started zed's copy");
     // my version
     rc = zeds_device(from, to, 1000);
     check(rc == 1000, "Zed's device failed: %d", rc);
     check(valid_copy(to, 1000, 'x'), "Zed's device failed copy.");
+    log_info("finished zed's copy");
 
     return 0;
 
