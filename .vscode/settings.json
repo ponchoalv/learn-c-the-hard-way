@@ -1,0 +1,7 @@
+{
+    "C_Cpp.dimInactiveRegions": false,
+    "files.associations": {
+        "stdint.h": "c",
+        "cstdint": "c"
+    }
+}

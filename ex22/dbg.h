@@ -25,9 +25,9 @@
 #define log_err(M, ...) fprintf(stderr, "[ERROR] (%s:%d:%s: errno: %s) " M "\n", \
                                 __FILE__, __LINE__, __FUNCTION_NAME__, clean_errno(), ##__VA_ARGS__)
 #define log_warn(M, ...) fprintf(stderr, "[WARN] (%s:%d:%s errno: %s) " M "\n", \
-                                __FILE__, __LINE__, __FUNCTION_NAME__, clean_errno(), ##__VA_ARGS__)
-#define log_info(M, ...) fprintf(stderr, "[INFO] (%s:%d:%s) " M "\n", \
-                                __FILE__, __LINE__, __FUNCTION_NAME__, ##__VA_ARGS__)
+                                 __FILE__, __LINE__, __FUNCTION_NAME__, clean_errno(), ##__VA_ARGS__)
+#define log_info(M, ...) fprintf(stderr, "[INFO] (%s:%d:%s) " M "\n", __FILE__, \
+                                 __LINE__, __FUNCTION_NAME__, ##__VA_ARGS__)
 
 #define check(A, M, ...)           \
     if (!(A))                      \
