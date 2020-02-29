@@ -16,6 +16,7 @@ int find_match_in_file(char *file_name, int wordsc, char **words, SearchType sea
 {
     FILE *filePointer = fopen(file_name, "r");
     check(filePointer, "Cannot open file %s", file_name);
+
     char buffer[MAX_DATA];
     int match_count = 0;
 
@@ -27,9 +28,7 @@ int find_match_in_file(char *file_name, int wordsc, char **words, SearchType sea
                 match_count++;
         }
 
-        if (search_type == AND && match_count == wordsc)
-            printf("%s in line %ld: %s", file_name, i, buffer);
-        else if (search_type == OR && match_count > 0)
+        if ((search_type == AND && match_count == wordsc) || (search_type == OR && match_count > 0))
             printf("%s in line %ld: %s", file_name, i, buffer);
 
         match_count = 0;
@@ -44,40 +43,48 @@ error:
     return -1;
 }
 
-int main(int argc, char *argv[])
+void scan_files(glob_t *globbuf)
 {
-    check(argc > 1, "USAGE: ex26 [-o] word1 word2 ...");
-
     // open search paths file
     FILE *filePointer = fopen(".logfind", "r");
     check(filePointer, "Cannot open file %s", ".logfind");
-
     char buffer[MAX_DATA];
-    glob_t globbuf;
 
     for (size_t i = 0; fgets(buffer, MAX_DATA - 1, filePointer); i++)
     {
         buffer[strcspn(buffer, "\n")] = 0;
         if (i == 0)
-            glob(buffer, GLOB_DOOFFS, NULL, &globbuf);
+            glob(buffer, GLOB_ERR, NULL, globbuf);
         else
-            glob(buffer, GLOB_DOOFFS | GLOB_APPEND, NULL, &globbuf);
+            glob(buffer, GLOB_ERR | GLOB_APPEND, NULL, globbuf);
     }
 
-    for (int i = 1; i <= globbuf.gl_pathc; i++)
-    {
-        if (strcmp(argv[1], "-o") == 0)
-            find_match_in_file(globbuf.gl_pathv[i], argc - 2, &argv[2], OR);
-        else
-            find_match_in_file(globbuf.gl_pathv[i], argc - 1, &argv[1], AND);
-    }
-
-    globfree(&globbuf);
-    fclose(filePointer);
-    return 0;
 error:
     if (filePointer)
         fclose(filePointer);
+}
+
+int main(int argc, char *argv[])
+{
+    check(argc > 1, "USAGE: ex26 [-o] word1 word2 ...");
+
+    glob_t globbuf;
+    scan_files(&globbuf);
+
+    SearchType search_type = strcmp(argv[1], "-o") == 0 ? OR : AND;
+    int first_word_index = search_type == OR ? 2 : 1;
+
+    for (int i = 0; i < globbuf.gl_pathc; i++)
+    {
+        find_match_in_file(globbuf.gl_pathv[i],
+                           argc - first_word_index,
+                           &argv[first_word_index],
+                           search_type);
+    }
+
+    globfree(&globbuf);
+    return 0;
+error:
     globfree(&globbuf);
     return -1;
 }
