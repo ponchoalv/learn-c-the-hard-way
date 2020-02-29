@@ -12,7 +12,7 @@ typedef enum SearchType
     OR
 } SearchType;
 
-int find_match_in_file(char *file_name, int wordsc, char **words, SearchType search_type)
+int match_in_file(char *file_name, int wordsc, char **words, SearchType search_type)
 {
     FILE *filePointer = fopen(file_name, "r");
     check(filePointer, "Cannot open file %s", file_name);
@@ -58,7 +58,7 @@ int scan_files(glob_t *globbuf)
         else
             glob(buffer, GLOB_ERR | GLOB_APPEND, NULL, globbuf);
     }
-    
+
     fclose(filePointer);
     return 0;
 error:
@@ -72,17 +72,20 @@ int main(int argc, char *argv[])
     check(argc > 1, "USAGE: ex26 [-o] word1 word2 ...");
 
     glob_t globbuf;
-    scan_files(&globbuf);
+    int rc = 0;
+    rc = scan_files(&globbuf);
+    check(rc == 0, "Failed to scan file list.");
 
     SearchType search_type = strcmp(argv[1], "-o") == 0 ? OR : AND;
     int first_word_index = search_type == OR ? 2 : 1;
 
     for (int i = 0; i < globbuf.gl_pathc; i++)
     {
-        find_match_in_file(globbuf.gl_pathv[i],
+        rc = match_in_file(globbuf.gl_pathv[i],
                            argc - first_word_index,
                            &argv[first_word_index],
                            search_type);
+        check(rc == 0, "Failed to find words in filelist.");
     }
 
     globfree(&globbuf);
