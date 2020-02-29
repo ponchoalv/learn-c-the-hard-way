@@ -43,7 +43,7 @@ error:
     return -1;
 }
 
-void scan_files(glob_t *globbuf)
+int scan_files(glob_t *globbuf)
 {
     // open search paths file
     FILE *filePointer = fopen(".logfind", "r");
@@ -58,10 +58,13 @@ void scan_files(glob_t *globbuf)
         else
             glob(buffer, GLOB_ERR | GLOB_APPEND, NULL, globbuf);
     }
-
+    
+    fclose(filePointer);
+    return 0;
 error:
     if (filePointer)
         fclose(filePointer);
+    return -1;
 }
 
 int main(int argc, char *argv[])
