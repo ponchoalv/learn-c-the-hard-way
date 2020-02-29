@@ -5,7 +5,6 @@
 #include "dbg.h"
 
 #define MAX_DATA 1024
-#define MAX_FILES 100
 
 typedef enum SearchType
 {
@@ -47,8 +46,12 @@ error:
 
 int main(int argc, char *argv[])
 {
+    check(argc > 1, "USAGE: ex26 [-o] word1 word2 ...");
+
+    // open search paths file
     FILE *filePointer = fopen(".logfind", "r");
     check(filePointer, "Cannot open file %s", ".logfind");
+
     char buffer[MAX_DATA];
     glob_t globbuf;
 
@@ -61,19 +64,14 @@ int main(int argc, char *argv[])
             glob(buffer, GLOB_DOOFFS | GLOB_APPEND, NULL, &globbuf);
     }
 
-    check(argc > 1, "USAGE: ex26 [-o] word1 word2 ...");
-
     for (int i = 1; i <= globbuf.gl_pathc; i++)
     {
         if (strcmp(argv[1], "-o") == 0)
-        {
             find_match_in_file(globbuf.gl_pathv[i], argc - 2, &argv[2], OR);
-        }
         else
-        {
             find_match_in_file(globbuf.gl_pathv[i], argc - 1, &argv[1], AND);
-        }
     }
+
     globfree(&globbuf);
     fclose(filePointer);
     return 0;
