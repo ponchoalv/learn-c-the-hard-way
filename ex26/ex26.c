@@ -3,23 +3,24 @@
 #include <glob.h>
 #include <string.h>
 #include "dbg.h"
+#include <assert.h>
 
 const size_t MAX_DATA = 1024;
-    
+
 typedef enum SearchType
 {
     AND,
     OR
 } SearchType;
 
-int match_in_file(char *file_name, size_t max_buffer, size_t wordsc, char **words, SearchType search_type)
+int match_in_file(char *file_name, size_t max_buffer, size_t wordsc, char *words[], SearchType search_type)
 {
+    assert(max_buffer >= MAX_DATA && "max_buffer must be at least 1024 for aceptable line length");
     check(file_name != NULL, "file_name cannot be NULL");
-
     FILE *filePointer = fopen(file_name, "r");
     check(filePointer, "Cannot open file %s", file_name);
 
-    char *buffer = malloc(sizeof(char) * max_buffer);
+    char *buffer = calloc(max_buffer, 1);
     check_mem(buffer);
 
     for (size_t i = 1; fgets(buffer, max_buffer - 1, filePointer); i++)
@@ -51,23 +52,29 @@ error:
 
 int scan_files(glob_t *globbuf, char *file_name, size_t max_buffer)
 {
+    assert(max_buffer >= 50 && "max_buffer must be at least 50 for aceptable file name length");
+
     check(file_name != NULL, "file_name cannot be NULL");
     check(globbuf != NULL, "Invalid glob_t given.");
 
-    char *buffer = malloc(sizeof(char) * max_buffer);
+    char *buffer = calloc(max_buffer, 1);
     check_mem(buffer);
 
     // open search paths file
     FILE *filePointer = fopen(file_name, "r");
     check(filePointer, "Cannot open file %s", ".logfind");
 
+    size_t glob_flags = GLOB_ERR;
+    int rc = 0;
+
     for (size_t i = 0; fgets(buffer, max_buffer - 1, filePointer); i++)
     {
         buffer[strcspn(buffer, "\n")] = 0;
+
+        rc = glob(buffer, glob_flags, NULL, globbuf);
+        check(rc == 0 || rc == GLOB_NOMATCH, "Failed to glob");
         if (i == 0)
-            glob(buffer, GLOB_ERR, NULL, globbuf);
-        else
-            glob(buffer, GLOB_ERR | GLOB_APPEND, NULL, globbuf);
+            glob_flags |= GLOB_APPEND;
     }
 
     fclose(filePointer);
