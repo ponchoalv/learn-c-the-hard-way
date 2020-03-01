@@ -4,8 +4,8 @@
 #include <string.h>
 #include "dbg.h"
 
-#define MAX_DATA 1024
-
+const size_t MAX_DATA = 1024;
+    
 typedef enum SearchType
 {
     AND,
