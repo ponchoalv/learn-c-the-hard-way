@@ -14,6 +14,8 @@ typedef enum SearchType
 
 int match_in_file(char *file_name, size_t max_buffer, size_t wordsc, char **words, SearchType search_type)
 {
+    check(file_name != NULL, "file_name cannot be NULL");
+
     FILE *filePointer = fopen(file_name, "r");
     check(filePointer, "Cannot open file %s", file_name);
 
@@ -47,13 +49,17 @@ error:
     return -1;
 }
 
-int scan_files(glob_t *globbuf, size_t max_buffer)
+int scan_files(glob_t *globbuf, char *file_name, size_t max_buffer)
 {
-    // open search paths file
-    FILE *filePointer = fopen(".logfind", "r");
-    check(filePointer, "Cannot open file %s", ".logfind");
+    check(file_name != NULL, "file_name cannot be NULL");
+    check(globbuf != NULL, "Invalid glob_t given.");
+
     char *buffer = malloc(sizeof(char) * max_buffer);
     check_mem(buffer);
+
+    // open search paths file
+    FILE *filePointer = fopen(file_name, "r");
+    check(filePointer, "Cannot open file %s", ".logfind");
 
     for (size_t i = 0; fgets(buffer, max_buffer - 1, filePointer); i++)
     {
@@ -81,9 +87,10 @@ int main(int argc, char *argv[])
     check(argc > 1, "USAGE: ex26 [-o] word1 word2 ...");
 
     glob_t globbuf;
+    char *list_file_name = ".logfind";
     int rc = 0;
-    rc = scan_files(&globbuf, MAX_DATA);
-    check(rc == 0, "Failed to scan file list.");
+    rc = scan_files(&globbuf, list_file_name, MAX_DATA);
+    check(rc == 0, "Failed to open scan file list.");
 
     SearchType search_type = strcmp(argv[1], "-o") == 0 ? OR : AND;
     int first_word_index = search_type == OR ? 2 : 1;
@@ -101,6 +108,7 @@ int main(int argc, char *argv[])
     globfree(&globbuf);
     return 0;
 error:
-    globfree(&globbuf);
-    return -1;
+    // if (globbuf.gl_pathv)
+    //     globfree(&globbuf);
+    return 1;
 }
