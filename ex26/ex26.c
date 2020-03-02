@@ -13,7 +13,7 @@ typedef enum SearchType
     OR
 } SearchType;
 
-int match_in_file(char *file_name, size_t max_buffer, size_t wordsc, char *words[], SearchType search_type)
+int match_in_file(const char *file_name, size_t max_buffer, size_t wordsc, char *words[], SearchType search_type)
 {
     assert(max_buffer >= MAX_DATA && "max_buffer must be at least 1024 for aceptable line length");
     check(file_name != NULL, "file_name cannot be NULL");
@@ -50,7 +50,7 @@ error:
     return -1;
 }
 
-int scan_files(glob_t *globbuf, char *file_name, size_t max_buffer)
+int scan_files(glob_t *globbuf, const char *file_name, size_t max_buffer)
 {
     assert(max_buffer >= 50 && "max_buffer must be at least 50 for aceptable file name length");
 
@@ -80,13 +80,13 @@ int scan_files(glob_t *globbuf, char *file_name, size_t max_buffer)
     fclose(filePointer);
     free(buffer);
     buffer = NULL;
-    return 0;
+    return rc;
 error:
     if (filePointer)
         fclose(filePointer);
     if (buffer)
         free(buffer);
-    return -1;
+    return rc;
 }
 
 int main(int argc, char *argv[])
