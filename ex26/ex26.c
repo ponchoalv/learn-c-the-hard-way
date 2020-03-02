@@ -17,6 +17,7 @@ int match_in_file(const char *file_name, size_t max_buffer, size_t wordsc, char 
 {
     assert(max_buffer >= MAX_DATA && "max_buffer must be at least 1024 for aceptable line length");
     check(file_name != NULL, "file_name cannot be NULL");
+    
     FILE *filePointer = fopen(file_name, "r");
     check(filePointer, "Cannot open file %s", file_name);
 
