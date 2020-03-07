@@ -2,6 +2,8 @@
     "C_Cpp.dimInactiveRegions": false,
     "files.associations": {
         "stdint.h": "c",
-        "cstdint": "c"
+        "cstdint": "c",
+        "libex28.h": "c",
+        "ctype.h": "c"
     }
 }
